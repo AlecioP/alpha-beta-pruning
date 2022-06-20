@@ -15,11 +15,6 @@ namespace minmax
         Node *right;
 
     protected:
-        bool is_leaf(Node *leaf)
-        {
-            return leaf->right == nullptr && leaf->left == nullptr;
-        }
-
         int max_value_ab(int alpha, int beta)
         {
             if (left == nullptr || right == nullptr) // LEAF NODE
@@ -35,6 +30,7 @@ namespace minmax
 
             return std::max(minmax_value_l, minmax_value_r);
         }
+
         int min_value_ab(int alpha, int beta)
         {
             if (left == nullptr || right == nullptr) // LEAF NODE
@@ -68,23 +64,24 @@ namespace minmax
         }
 
     private:
-        void breadth_visit(std::deque<int> &q)
-        {
-            if (is_leaf(left) && is_leaf(right))
-            {
-                q.push_back(left->value);
-                q.push_back(right->value);
-                q.push_front(value);
+
+        void add_nodes_level(int l, std::deque<int> &q, int current_level=0){
+            if(current_level==l){
+                q.push_back(this->value);
                 return;
             }
+            if(left!=nullptr)
+                left->add_nodes_level(l,q,current_level+1);
+            if(right!=nullptr)
+                right->add_nodes_level(l,q,current_level+1);
+        }
 
-            if (left != nullptr)
-                left->breadth_visit(q);
-
-            if (right != nullptr)
-                right->breadth_visit(q);
-
-            q.push_front(value);
+        void breadth_visit(std::deque<int> &q){
+            for(int l=0;l<height();l++){
+                std::cout<<"Aggiungo nodi di livello "<<l<<std::endl;
+                add_nodes_level(l,q);
+                std::cout<<"In coda "<<q.size()<<" nodi"<<std::endl;
+            }
         }
 
     public:
@@ -110,7 +107,7 @@ namespace minmax
             std::string *txt = new std::string;
             std::deque<int> printqueue;
             breadth_visit(printqueue);
-            //std::cout << "Size " << printqueue.size() << std::endl;
+            std::cout << "Size " << printqueue.size() << std::endl;
             int level = 0;
             while (!printqueue.empty())
             {
@@ -126,6 +123,20 @@ namespace minmax
                 txt->append("\n");
             }
             return txt;
+        }
+
+        int height(){
+            int left_h = 0,right_h=0;
+            if(left != nullptr)
+                left_h = left->height();
+            if(right != nullptr)
+                right_h = right->height();
+            return 1+ std::max(left_h,right_h);
+        }
+
+        bool is_leaf()
+        {
+            return right == nullptr && left == nullptr;
         }
     };
 }
